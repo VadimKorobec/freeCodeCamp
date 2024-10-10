@@ -1,3 +1,26 @@
+const isEven = (num) => (num % 2 === 0 ? true : false);
+
+const sum = (nums) => nums.reduce((acc, el) => acc + el, 0);
+
+const average = (nums) => sum(nums) / nums.length;
+
+const median = (nums) => {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const length = sorted.length;
+  const middle = length / 2 - 1;
+  return isEven(length)
+    ? average([sorted[middle], sorted[middle + 1]])
+    : sorted[Math.ceil(middle)];
+};
+
+const spreadsheetFunctions = {
+  sum,
+  average,
+  median,
+}
+
+console.log(spreadsheetFunctions)
+
 const range = (start, end) =>
   Array(end - start + 1)
     .fill(start)
@@ -16,7 +39,29 @@ window.onload = () => {
     label.className = "label";
     label.textContent = name;
     container.appendChild(label);
-    };
-    
-    const letters = charRange("A","J")
+  };
+
+  const letters = charRange("A", "J");
+
+  letters.forEach(createLabel);
+
+  range(1, 99).forEach((number) => {
+    createLabel(number);
+    letters.forEach((letter) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = letter + number;
+      input.ariaLabel = input.id;
+
+      input.onchange = update;
+
+      container.appendChild(input);
+    });
+  });
 };
+
+const update = (event) => {
+  const element = event.target.value;
+  const value = element.value.replace(/\s/g, "");
+  if(!value.includes(element.id) && value[0] === '='){}
+}
