@@ -1,11 +1,22 @@
 const infixToFunction = {
   "+": (x, y) => x + y,
-  "-": (x, y) => x - y, 
+  "-": (x, y) => x - y,
   "*": (x, y) => x * y,
-  "/":(x,y) => x / y,
+  "/": (x, y) => x / y,
 };
 
-const infixEval = (str,regex) => str.replace(regex,(_match,arg1,operator,arg2)=>{})
+const infixEval = (str, regex) =>
+  str.replace(regex, (_match, arg1, operator, arg2) =>
+    infixToFunction[operator](parseFloat(arg1), parseFloat(arg2))
+  );
+
+const highPrecedence = (str) => {
+  const regex = /([\d.]+)([*\/])([\d.]+)/;
+  const str2 = infixEval(str, regex);
+  return str2 === str ? str : highPrecedence(str2);
+};
+
+console.log(highPrecedence("5*3"));
 
 const isEven = (num) => (num % 2 === 0 ? true : false);
 
@@ -26,6 +37,33 @@ const spreadsheetFunctions = {
   sum,
   average,
   median,
+  even: (nums) => nums.filter(isEven),
+  firsttwo: (nums) => nums.slice(0, 2),
+  lasttwo: (nums) => nums.slice(-2),
+  has2: (nums) => nums.includes(2),
+  increment: (nums) => nums.map((num) => num + 1),
+  someeven: (nums) => nums.some(isEven),
+  everyeven: (nums) => nums.every(isEven),
+  random: ([x, y]) => Math.floor(Math.random() * y + x),
+  range: (nums) => range(...nums),
+  nodupes: (nums) => Array.from(new Set(nums)),
+};
+
+const applyFunction = (str) => {
+  const noHigh = highPrecedence(str);
+  const infix = /([\d.]+)([+-])([\d.]+)/;
+  const str2 = infixEval(noHigh, infix);
+  const functionCall = /([a-z0-9]*)\(([0-9., ]*)\)(?!.*\()/i;
+
+  const toNumberList = (args) => args.split(",").map(parseFloat);
+  const apply = (fn, args) =>
+    spreadsheetFunctions[fn.toLowerCase()](toNumberList(args));
+
+  return str2.replace(functionCall, (match, fn, args) =>
+    spreadsheetFunctions.hasOwnProperty(
+      fn.toLowerCase() ? apply(fn, args) : match
+    )
+  );
 };
 
 const range = (start, end) =>
@@ -55,6 +93,12 @@ const evalFormula = (x, cells) => {
   const cellExpanded = rangeExpanded.replace(cellRegex, (match) =>
     idToText(match.toUpperCase())
   );
+
+  const functionExpanded = applyFunction(cellExpanded);
+
+  return functionExpanded === x
+    ? functionExpanded
+    : evalFormula(functionExpanded, cells);
 };
 
 window.onload = () => {
@@ -90,5 +134,14 @@ const update = (event) => {
   const element = event.target.value;
   const value = element.value.replace(/\s/g, "");
   if (!value.includes(element.id) && value[0] === "=") {
+    element.value = evalFormula(
+      value.slice(1),
+      Array.from(document.getElementById("container").children
+    ));
   }
 };
+
+const arr = [1, 1, 2, 2, 3, 3];
+
+const newArr = Array.from(new Set(arr));
+console.log(newArr)
