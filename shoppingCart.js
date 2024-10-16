@@ -134,6 +134,63 @@ class ShoppingCart {
         <P>${price}</P>
         </div>`);
   }
+
+  getCounts() {
+    return this.items.length;
+  }
+
+  calculateTaxes(amount) {
+    return parseFloat(((this.taxRate / 100) * amount).toFixed(2));
+  }
+
+  calculateTotal() {
+    const subTotal = this.items.reduce((total, item) => total + item.price, 0);
+    const tax = this.calculateTaxes(subTotal);
+    this.total = tax + subTotal;
+    cartSubTotal.textContent = `$${subTotal.toFixed(2)}`;
+    cartTaxes.textContent = `$${tax.toFixed(2)}`;
+    cartTotal.textContent = `$${this.total.toFixed(2)}`;
+    return this.total;
+  }
+
+  clearCart() {
+    if (!this.items.length) {
+      alert("Your shopping cart is already empty");
+      return;
+    }
+
+    const isCartCleared = confirm(
+      "Are you sure you want to clear all items from your shopping cart?"
+    );
+
+    if (isCartCleared) {
+      this.items = [];
+      this.total = 0;
+      productsContainer.innerHTML = "";
+      totalNumberOfItems.textContent = 0;
+      cartSubTotal.textContent = 0;
+      cartTaxes.textContent = 0;
+      cartTotal.textContent = 0;
+    }
+  }
 }
 
-console.log(ShoppingCart);
+const cart = new ShoppingCart();
+
+const addToCartBtns = document.getElementsByClassName("add-to-cart-btn");
+
+[...addToCartBtns].forEach((btn) => {
+  btn.addEventListener("click", (event) => {
+    cart.addItem(Number(event.target.id), products);
+    totalNumberOfItems.textContent = cart.getCounts();
+    cart.calculateTotal();
+  });
+});
+
+cartBtn.addEventListener("click", () => {
+  isCartShowing = !isCartShowing;
+  showHideCartSpan.textContent = isCartShowing ? "Hide" : "Show";
+  cartContainer.style.display = isCartShowing ? "block" : "none";
+});
+
+clearCartBtn.addEventListener('click',cart.clearCart.bind(cart))
