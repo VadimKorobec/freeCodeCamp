@@ -16,3 +16,10 @@ console.log(user["name"]);
 console.log(user.age);
 
 user.greet();
+
+
+const hobbies = ["Sports", "Coocking", "Reading"];
+
+const index = hobbies.findIndex(item => item === 'Reading');
+const editedHobbies = hobbies.map(item =>({text:item}))
+console.log(editedHobbies)
